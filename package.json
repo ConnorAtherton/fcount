@@ -1,0 +1,28 @@
+{
+  "name": "fcount",
+  "version": "0.0.2",
+  "description": "Recursively count the number files in a directory given a pattern to match on.",
+  "preferGlobal": "true",
+  "main": "src/count.js",
+  "scripts": {
+    "test": "test"
+  },
+  "directories": {
+    "bin": "./bin"
+  },
+  "bin": {
+    "fcount": "./bin/count.js"
+  },
+  "keywords": [
+    "files",
+    "count"
+  ],
+  "author": "Connor Atherton",
+  "license": "MIT",
+  "dependencies": {
+    "minimist": "~0.2.0",
+    "chalk": "~0.5.1",
+    "async": "~0.9.0",
+    "cli-table": "~0.3.0"
+  }
+}
