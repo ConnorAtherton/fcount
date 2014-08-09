@@ -1,7 +1,7 @@
-var fs = require('fs'),
-    path = require('path'),
-    chalk = require('chalk'),
-    Table = require('cli-table');
+var fs = require('fs');
+var path = require('path');
+var chalk = require('chalk');
+var Table = require('cli-table');
 
 //
 // Storage hash. Used for keeping track of multiple
@@ -16,13 +16,13 @@ var table = new Table({
 
 function count(extensions) {
   copy_to_obj(extensions);
-  
+
   walk(process.cwd(), function(err) {
-    if (err) throw err;
+    if (err) return console.log(err);
 
     for (file in file_counts) {
       if (file_counts.hasOwnProperty(file)) {
-        table.push( [file, file_counts[file] ]);
+        table.push([file, file_counts[file]]);
       }
     }
 
@@ -35,43 +35,76 @@ function count(extensions) {
 //
 function copy_to_obj(extensions) {
   var key;
+
   for (var i = 0, len = extensions.length; i < len; i++) {
     key = extensions[i];
     file_counts[key] = 0;
   };
 }
 
+//
+// Walks a path recursively calling the callback on each file.
+// @param {string} dir The directory path to start traversing from.
+// @param {Function} cb The function to call when fully traversed or an error occurred.
+// @returns {void}
+// @private
+//
 function walk(dir, cb) {
-  var file, abs_path, i = 0;
 
-  fs.readdir(dir, function(err, list) {
-    if (err) return cb(err);
+  var remaining = 1;
 
-    (function next () {
-      file = list[i++];
-      if (!file) return cb(null);
+  (function traverse(dir) {
 
-      abs_path = path.resolve(dir, file);
+    fs.readdir(dir, function(err, list) {
+      if (err) return cb(err);
+      remaining--;
 
-      fs.stat(file, function (err, stat) {
+      list.forEach(function(file) {
+        remaining++;
 
-        if (stat && stat.isDirectory()) {
-          walk(file, function (err) {
-            next();
-          });
-        } else {
-          slice_extension(abs_path);
-          // console.log(chalk.blue('file'), chalk.red(file), chalk.green(abs_path));
-          next();
-        }
+        var abs_path = path.resolve(dir, file);
+        fs.stat(abs_path, function (err, stat) {
+          if(err) {
+            remaining--;
+            return cb(err);
+          }
+
+          if(stat) {
+            if (stat.isDirectory()){
+              // Don't traverse hidden dirs like .git
+             return isHidden(file) ? --remaining : traverse(abs_path);
+            } else {
+              if (!isHidden(file)) slice_extension(abs_path);
+              remaining--;
+              // if this is the last file we are done
+              if(!remaining) return cb(null);
+            }
+          }
+        });
       });
-    })();
-  });
+
+      // if we finish on an empty file we
+      // have to escape here
+      if(!remaining) {
+        cb(null);
+      }
+    });
+  })(process.cwd());
+}
+
+//
+// Checks to see whether a directory or file is hidden.
+// @param {string} filename The directory/file.
+// @returns {boolean}
+// @private
+//
+function isHidden(filename) {
+  return filename.substring(0, 1) === '.';
 }
 
 function slice_extension(abs_path) {
-  var ext = path.extname(abs_path),
-      sliced = ext.slice(1, ext.length);
+  var ext = path.extname(abs_path);
+  var sliced = ext.slice(1, ext.length);
 
   if (sliced in file_counts) {
     file_counts[sliced]++;
