@@ -40,7 +40,7 @@ TODO
 
  - Add in the ability to exclude certain folders from the directory traversal. For example,
 all files inside of ```node_modules``` should not be counted. I'm thinking to use the ```-e```
-flag followed by a space seperated list of diretcory name.
+flag followed by a space seperated list of directory names.
 
 ```
 $ fcount js json -e node_modules
@@ -48,6 +48,5 @@ $ fcount js json -e node_modules
 
 - Document methods in count.js.
 
-- TESTS. It's 1.20am right now, need to come back and do later!
 
 

@@ -2,7 +2,7 @@
 
 var chalk = require('chalk');
 var argv = require('minimist')(process.argv.slice(2));
-var count = require('../src/count.js')(argv._);
+var count = require('../src/count.js')(argv);
 
 // provide clean output on exceptions rather than dumping a stack trace
 process.on('uncaughtException', function(err){

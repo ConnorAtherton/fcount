@@ -7,17 +7,24 @@ var Table = require('cli-table');
 // Storage hash. Used for keeping track of multiple
 // file types and their respective counts.
 //
-var file_counts = {};
+var file_counts;
 
 var table = new Table({
-  head: ['File type', 'Count'],
-  //colWidths: [100, 200]
+  head: ['File type', 'Count']
 });
 
-function count(extensions) {
-  copy_to_obj(extensions);
+function count(args, cb, dir) {
+  dir = dir || null;
+  file_counts = {};
 
-  walk(process.cwd(), function(err) {
+  if (!(args._.length > 0)) {
+    var message = chalk.red('Error: ') + chalk.yellow('fcount expects at least one extension to be passed in.');
+    return cb ? cb(message) : console.log(message);
+  }
+
+  copy_to_obj(args._);
+
+  walk(dir, function(err) {
     if (err) return console.log(err);
 
     for (file in file_counts) {
@@ -26,7 +33,11 @@ function count(extensions) {
       }
     }
 
-    console.log(table.toString());
+    if (args.d) {
+      return cb ? cb(file_counts) : file_counts;
+    } else {
+      return cb ? cb(table.toString()) : console.log(table.toString());
+    }
   });
 }
 
@@ -89,7 +100,7 @@ function walk(dir, cb) {
         cb(null);
       }
     });
-  })(process.cwd());
+  })(process.cwd() + (dir || ''));
 }
 
 //
