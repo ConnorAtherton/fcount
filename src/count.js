@@ -1,6 +1,6 @@
 var fs = require('fs');
 var path = require('path');
-var chalk = require('chalk');
+var hw = require('headway');
 var Table = require('cli-table');
 
 //
@@ -18,8 +18,8 @@ function count(args, cb, dir) {
   file_counts = {};
 
   if (!(args._.length > 0)) {
-    var message = chalk.red('Error: ') + chalk.yellow('fcount expects at least one extension to be passed in.');
-    return cb ? cb(message) : console.log(message);
+    var message = hw.parse('{red}Error: {/}{yellow}fcount expects at least one extension to be passed in.');
+    return cb ? cb(message, null) : console.log(message);
   }
 
   copy_to_obj(args._);
@@ -74,21 +74,21 @@ function walk(dir, cb) {
         remaining++;
 
         var abs_path = path.resolve(dir, file);
-        fs.stat(abs_path, function (err, stat) {
-          if(err) {
+        fs.lstat(abs_path, function (err, stat) {
+          if (err) {
             remaining--;
             return cb(err);
           }
 
-          if(stat) {
+          if (stat) {
             if (stat.isDirectory()){
-              // Don't traverse hidden dirs like .git
-             return isHidden(file) ? --remaining : traverse(abs_path);
+              // Don't traverse hidden dirs like .git or symlinks
+             return isHidden(file) || stat.isSymbolicLink() ? --remaining : traverse(abs_path);
             } else {
               if (!isHidden(file)) slice_extension(abs_path);
               remaining--;
               // if this is the last file we are done
-              if(!remaining) return cb(null);
+              if (!remaining) return cb(null);
             }
           }
         });
@@ -96,9 +96,8 @@ function walk(dir, cb) {
 
       // if we finish on an empty file we
       // have to escape here
-      if(!remaining) {
-        cb(null);
-      }
+      if (!remaining) cb(null);
+
     });
   })(process.cwd() + (dir || ''));
 }

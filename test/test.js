@@ -2,11 +2,11 @@ var assert = require('chai').assert;
 var count = require('../src/count');
 
 var commands = {
-  basic: { _: [] },
-  noFile: { _: ['c'], d: true },
-  single: { _: ['java'], d: true },
+  basic:    { _: [] },
+  noFile:   { _: ['c'], d: true },
+  single:   { _: ['java'], d: true },
   multiple: { _: ['js', 'rb', 'json'], d: true },
-  hidden: { _: ['gitignore', 'hidden'], d: true }
+  hidden:   { _: ['gitignore', 'hidden'], d: true }
 }
 
 describe('When no arguments are passed in', function() {
